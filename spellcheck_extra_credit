@@ -1,0 +1,1559 @@
+Script started on Fri 19 Apr 2013 02:10:04 AM EDT
+]0;dumas_ms@cobra:~/CSC245/Prog3[?1034h[dumas_ms@cobra Prog3]$ cat dict.txt
+at
+anonymous
+a
+already
+along
+after
+adjustments
+adapter
+about
+access
+accept
+actually
+adjust
+adapters
+address
+add
+additional
+advised
+almost
+all
+aims
+and
+an
+also
+alternatives
+anything
+any
+answer
+as
+anywhere
+appear
+are
+append
+april
+applies
+around
+assumes
+be
+attempt
+attached
+attention
+available
+base
+based
+behave
+beginning
+begin
+becoming
+before
+been
+bug
+brick
+boot
+blue
+both
+boots
+by
+but
+build
+built
+building
+bus
+button
+header
+disk
+detected
+channel
+cannot
+can
+cable
+cables
+called
+can't
+changes
+certain
+capacity
+cd-rom
+card
+cartridges
+careful
+case
+certainly
+chained
+chain
+check
+design
+current
+copy
+converters
+command
+co-exist
+clause
+choose
+choice
+collected
+comes
+come
+constant
+components
+complex
+compile
+compatible
+configured
+configuration
+computer's
+console
+connects
+conjunction
+confusing
+configuring
+conflict
+connected
+connect
+connector
+connecting
+connectors
+contain
+contributions
+contained
+controller
+critical
+course
+couple
+correspond
+could
+correspondingly
+depends
+defaults
+currently
+data
+cylinders
+default
+day
+describes
+device
+dip
+devices
+discussion
+disappear
+driver
+diverted
+display
+disks
+distributions
+displayed
+drive
+do
+documented
+documentation
+document
+don't
+does
+door
+drive's
+gives
+find
+easily
+drivers
+drives
+each
+else
+eject
+effect
+finally
+enabled
+every
+even
+errors
+ends
+enables
+enclosure
+enhancements
+file
+example
+exactly
+except
+existing
+fast
+family
+expect
+familiar
+extreme
+external
+features
+few
+female
+fetch
+fill
+files
+get
+for
+following
+firmly
+floppy
+flag
+from
+found
+forget
+force
+gear
+front
+gaps
+have
+has
+grant
+go
+hardware
+host
+here
+help
+high
+hold
+holding
+macintosh
+id
+i
+how
+identically
+introduction
+information
+if
+identifying
+identify
+in
+important
+included
+include
+incorporates
+into
+install
+insert
+internal
+interim
+intended
+instructions
+installation
+instance
+installed
+interface
+introduced
+look
+is
+kernels
+kernel's
+kernel
+it
+its
+itself
+jumpers
+like
+last
+large
+less
+lightweight
+log
+locks
+locked
+likely
+loadable
+line
+limited
+load
+list
+loaded
+loops
+low-level
+low
+make
+main
+major
+many
+male
+may
+markets
+sectors
+section
+screens
+mode
+messages
+megabytes
+menu
+might
+method
+missing
+modes
+model
+revision
+retrieve
+name
+must
+module
+most
+more
+modules
+months
+on
+need
+of
+not
+net
+next
+new
+nice
+normally
+no
+none
+numbers
+number
+note
+now
+obtained
+often
+port
+parts
+only
+once
+one
+parallel
+otherwise
+or
+others
+other
+oriented
+part
+parameter
+parameters
+partly
+particular
+pin
+pieces
+physically
+paul
+pay
+please
+plastic
+point
+popular
+pressed
+powerful
+powered
+possible
+ports
+portable
+report
+relevant
+released
+reboot
+read
+quite
+question
+published
+printer
+provide
+protocol
+process
+proprietary
+recent
+removed
+remember
+removable
+responsibility
+required
+resembling
+same
+sample
+screen
+sector
+torque
+the
+send
+selects
+select
+seen
+see
+should
+sequential
+several
+set
+setup
+shipped
+someone
+some
+slower
+similar
+shutdown
+since
+simultaneous
+small
+software
+something
+subdirectory
+speed
+somewhat
+soon
+specific
+source
+special
+specified
+starting
+stable
+start
+standard
+step
+style
+study
+such
+system
+syntax
+summary
+supplied
+switches
+support
+sure
+supports
+switch
+that
+terminated
+tells
+target
+terminators
+terminator
+termination
+thank
+to
+this
+them
+their
+these
+then
+there
+thing
+they
+things
+time
+three
+those
+thorough
+timing
+total
+touch
+type
+trouble
+try
+traditional
+tree
+two
+zip
+vendor
+using
+useful
+use
+types
+under
+unlocks
+used
+users
+uses
+usually
+would
+version
+were
+way
+versions
+want
+wall
+wants
+well
+will
+what
+when
+where
+which
+while
+with
+wiring
+work
+workaround
+your
+you
+zoom
+]0;dumas_ms@cobra:~/CSC245/Prog3[dumas_ms@cobra Prog3]$ cat spellCheck.cpp
+using namespace std;
+#include <string>
+#include <iostream>
+#include <vector>
+#include <fstream>
+#include <boost/algorithm/string.hpp>
+#include "dictionary.h"
+#include <stdlib.h>
+#include "BinarySearchTree.h"
+using namespace boost;
+
+void load_dict(Dictionary <string> & cambridge);
+void check_field(vector <string> &fields, Dictionary <string> & cambridge,ofstream &outfile);
+void print(vector <string> & v);
+bool inhash(Dictionary <string> & cambridge, string word);
+void add_2_tree(string word);
+void menu(string word,Dictionary <string> & cambridge, ofstream &outfile);
+void swap(string word,Dictionary <string> & cambridge);
+int linenumb = 1;
+
+//Struct for adding misspelled words
+struct BNode
+{
+	string word;
+	int lineNum;
+	bool operator < (BNode otherStruct) const
+	{
+		return ( word < otherStruct.word );
+	}
+};
+typedef BinarySearchTree<BNode> BST;
+
+BNode bN = {"",0}; //Creating Dummy Node
+BST myBST(bN); //Initializing myBST with Dummy Node
+Dictionary <string> ignored_words ("ZZZ",1000); //For Ignored Words
+
+int main(int argc, char *argv[] )
+{
+
+		
+
+	if(argc<2)
+	{cout << "Invalid Entry" << endl;
+	return 0;}
+	
+	ifstream infile;
+	ofstream outfile;
+	outfile.open("dict.txt", ios_base::app); //Opens the file without deleting it
+	infile.open( argv[1] );	
+	string content = "";
+	vector <string> fields;	
+	Dictionary <string> cambridge ("ZZZ",1000);
+	load_dict(cambridge);
+
+	getline(infile,content);	
+	while(infile)
+	{
+		split( fields, content, is_any_of(" ") );
+		check_field(fields,cambridge,outfile);
+		getline(infile,content);
+		linenumb++;
+
+	}	
+	infile.close();
+
+	//Write Notfound Words to notfound.txt
+	outfile.open("notfound.txt");
+	myBST.printTree( outfile );
+	outfile.close();
+
+	cout << "\n********Program has reached the end of the file********\n\nNow Exiting" << endl;
+	
+	return 0;
+}
+
+void load_dict(Dictionary <string> & cambridge)
+{
+	ifstream infile;
+	//Open Dictionary File
+	infile.open("dict.txt");
+	string content = "";
+	
+
+	getline(infile,content);
+	while(infile)
+	{
+		
+		cambridge.insert(content); //Inserts each word into the dictionary
+		getline(infile,content);
+
+	}
+
+	infile.close();
+}
+
+void check_field(vector <string> &fields, Dictionary <string> & cambridge, ofstream &outfile)
+{
+	string stemp = "";
+	bool isword = false;
+	char f_char,l_char;
+
+	for(size_t n = 0; n < fields.size(); n++)
+	{
+		stemp = fields[n];
+
+		cout << "Line:" << linenumb  << "\tField :\t\t" << fields[n] << "\t\tCase:\t";
+	
+		//string must have a length greater than or equal to 1 to be a word
+		if(stemp.length() >= 1 )
+		{
+
+				f_char = stemp.at(0); 			//Taking first char
+				l_char = stemp.at(stemp.length()-1); 	//Taking the last char
+				if( ( f_char <= 'z' && f_char >= 'a' ) || ( f_char <= 'Z' && f_char >= 'A' ) ) //Checking if first char is a letter
+				 {
+					isword = true;
+					cout << "Is Word:\t\t"; //If both conditions are true its word
+					
+					if( ( l_char <= 'z' && l_char >= 'a' ) || ( l_char <= 'Z' && l_char >= 'A' ) ) //Checking if last char is a letter
+					{	isword = true;	}
+					else	 //If the first char is a letter but the last is not chop off last char
+					{	 
+						stemp = stemp.substr(0,stemp.length()-1); //Are temp word is now a word
+						isword = true;
+						cout << "New Word:\t" << stemp << "\t";
+					}	
+				 }
+				else //If first char was not a letter check last char
+				if( ( l_char <= 'z' && l_char >= 'a' ) || ( l_char <= 'Z' && l_char >= 'A' ) ) //if first char is not a letter but last char is a letter chop off first char
+				{
+
+						stemp = stemp.substr(1,stemp.length()-1); //Are temp word is now a word
+						isword = true;
+						cout << "New Word:\t" << stemp << "\t";
+
+				}
+
+			if(!isword) 
+			{cout << "Not Word" << endl;
+			}
+
+
+			//If the temp string is a word, check if its in the hash
+			if(isword)
+			{
+			//Convert the string to lowercase before checking the hash
+			stemp = to_lower_copy(stemp);
+	
+			 if(inhash(cambridge,stemp))
+				cout << "found in hash" << endl;
+			  else
+				{	cout << "Not found in hash" << endl;
+					add_2_tree(stemp);	 //Adding not found word to binary search tree
+					menu(stemp,cambridge,outfile);
+				}
+			}
+			isword = false;	//Reset Condition for next word
+		
+		}
+		else
+		cout << "Not Word" << endl;
+
+
+
+	
+	}
+}
+
+void add_2_tree(string word)
+{
+	BNode bN = {word, linenumb};
+	myBST.insert(bN);
+}
+
+
+
+
+void print(vector <string> & v)
+{
+	for(size_t n = 0; n < v.size(); n++)
+	cout << "\"" << v[n] << "\"\n";
+	cout << endl;
+}
+
+bool inhash(Dictionary <string> & cambridge, string word) //Takes in a dictionary and the word to be checked
+{
+	
+	if( ( cambridge.lookup(word) == word ) || ( ignored_words.lookup(word) == word) )//If in our hash
+	return true;
+	else
+	return false;
+
+}
+
+void menu(string word,Dictionary <string> & cambridge, ofstream &outfile)
+{
+
+	system("clear"); 
+
+	cout << "---------\tTHE SPELL CHECKER PROGRAM\t---------\n" << endl;
+	
+	cout << word << " On Line " << linenumb << " Was Not Found In Dictionary\n" << endl;
+
+	cout <<  "A)\tAdd the Word To Dictionary\n"
+	     	 "I)\tIgnore Word, and Skip Future References\n"
+		 "G)\tGo On To Next Word\n"
+		 "S)\tSearch For A Suggested Spelling\n"
+		 "Q)\tQuit Spell Checking File\n\n";
+
+	cout << "Selection : ";
+
+	char choice;
+	choice = cin.get();
+	choice = toupper(choice);
+	cin.get();
+	
+
+	switch( choice )
+	{
+		case 'A':
+		cambridge.insert(word);
+		outfile << word << endl;	
+		cout << "\nThe Word " << word << " Has Been Successfully Inserted" << endl;		
+		cout << "Press Enter to Continue..." << endl;
+		cin.get();
+		break;
+	
+		case 'I':
+		ignored_words.insert(word);
+		cout << "\nThe Word was Flagged" << endl;		
+		cout << "Press Enter to Continue..." << endl;
+		cin.get();
+		break;
+
+		case 'G':
+		break;
+
+		case 'S':
+		swap(word,cambridge);
+		cin.get();
+		menu(word,cambridge,outfile);
+		break;
+
+		case 'Q':
+		cout << "\nNow Exiting, Adios Flamingo...\n" << endl;
+		exit(1);
+		break;
+
+		default : 
+		cout << "Selection Error -- Please Try Again" << endl;
+		cin.get();
+		menu(word,cambridge,outfile);
+		break;
+
+	}
+
+ 
+}
+
+void swap(string word, Dictionary <string> & cambridge)
+{
+	string temp = word;
+	string c;
+	int i;
+	bool found = false;
+
+	for(i =0; i < word.length()-1; i++)
+	{	c = word.at(i); 	//Take first char
+		temp.erase(i,1);	//delete first char in temp string
+//		cout << temp << endl;
+		temp.insert(i+1,c); 	//Insert the char at right spot
+//		cout << temp << endl;
+//		cout << endl;
+
+		//Check if newword is in hash
+		if(inhash( cambridge,temp) )
+		{	cout << "Suggested Spelling :\t" << temp  << endl << endl;
+			i = word.length();	//Force Loop to stop
+			found = true;	
+		}
+		
+		temp = word; //Resetting temp
+ 	}
+
+	if(!found)
+	{ cout << "No Correct Spelling was found...\n" << endl;
+	}
+
+	  cout << "Press Enter to Return to Menu..." << endl;
+	
+}
+]0;dumas_ms@cobra:~/CSC245/Prog3[dumas_ms@cobra Prog3]$ cat spellCheck.cpp[6Pdict.txt[8Pexitcat dict.txt./spellCheck.out myFile.txt[4P myFile.txtc++ -o spellCheck.out spellCheck.cpp[8PradixS.out radixS.cppspellCheck.out spellCheck.cpp
+]0;dumas_ms@cobra:~/CSC245/Prog3[dumas_ms@cobra Prog3]$ c++ -o spellCheck.out spellCheck.cpp[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[18Pa[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[6Pdict.txt[8Pexitcat dict.txt./spellCheck.out myFile.txt
+Line:1	Field :				Case:	Not Word
+Line:2	Field :		03-25-13		Case:	Not Word
+Line:3	Field :				Case:	Not Word
+Line:4	Field :		Thsi		Case:	Is Word:		Not found in hash
+[H[2J---------	THE SPELL CHECKER PROGRAM	---------
+
+thsi On Line 4 Was Not Found In Dictionary
+
+A)	Add the Word To Dictionary
+I)	Ignore Word, and Skip Future References
+G)	Go On To Next Word
+S)	Search For A Suggested Spelling
+Q)	Quit Spell Checking File
+
+Selection : s
+Suggested Spelling :	this
+
+Press Enter to Return to Menu...
+
+[H[2J---------	THE SPELL CHECKER PROGRAM	---------
+
+thsi On Line 4 Was Not Found In Dictionary
+
+A)	Add the Word To Dictionary
+I)	Ignore Word, and Skip Future References
+G)	Go On To Next Word
+S)	Search For A Suggested Spelling
+Q)	Quit Spell Checking File
+
+Selection : i
+
+The Word was Flagged
+Press Enter to Continue...
+
+Line:4	Field :		is		Case:	Is Word:		found in hash
+Line:4	Field :		a		Case:	Is Word:		found in hash
+Line:4	Field :		fiel		Case:	Is Word:		Not found in hash
+[H[2J---------	THE SPELL CHECKER PROGRAM	---------
+
+fiel On Line 4 Was Not Found In Dictionary
+
+A)	Add the Word To Dictionary
+I)	Ignore Word, and Skip Future References
+G)	Go On To Next Word
+S)	Search For A Suggested Spelling
+Q)	Quit Spell Checking File
+
+Selection : s
+Suggested Spelling :	file
+
+Press Enter to Return to Menu...
+
+[H[2J---------	THE SPELL CHECKER PROGRAM	---------
+
+fiel On Line 4 Was Not Found In Dictionary
+
+A)	Add the Word To Dictionary
+I)	Ignore Word, and Skip Future References
+G)	Go On To Next Word
+S)	Search For A Suggested Spelling
+Q)	Quit Spell Checking File
+
+Selection : i
+
+The Word was Flagged
+Press Enter to Continue...
+
+Line:4	Field :		that		Case:	Is Word:		found in hash
+Line:4	Field :		has		Case:	Is Word:		found in hash
+Line:4	Field :		soem		Case:	Is Word:		Not found in hash
+[H[2J---------	THE SPELL CHECKER PROGRAM	---------
+
+soem On Line 4 Was Not Found In Dictionary
+
+A)	Add the Word To Dictionary
+I)	Ignore Word, and Skip Future References
+G)	Go On To Next Word
+S)	Search For A Suggested Spelling
+Q)	Quit Spell Checking File
+
+Selection : s
+Suggested Spelling :	some
+
+Press Enter to Return to Menu...
+
+[H[2J---------	THE SPELL CHECKER PROGRAM	---------
+
+soem On Line 4 Was Not Found In Dictionary
+
+A)	Add the Word To Dictionary
+I)	Ignore Word, and Skip Future References
+G)	Go On To Next Word
+S)	Search For A Suggested Spelling
+Q)	Quit Spell Checking File
+
+Selection : i
+
+The Word was Flagged
+Press Enter to Continue...
+
+Line:4	Field :		spelling		Case:	Is Word:		Not found in hash
+[H[2J---------	THE SPELL CHECKER PROGRAM	---------
+
+spelling On Line 4 Was Not Found In Dictionary
+
+A)	Add the Word To Dictionary
+I)	Ignore Word, and Skip Future References
+G)	Go On To Next Word
+S)	Search For A Suggested Spelling
+Q)	Quit Spell Checking File
+
+Selection : g
+Line:4	Field :		errors.		Case:	Is Word:		New Word:	errors	found in hash
+Line:5	Field :				Case:	Not Word
+Line:6	Field :		Every		Case:	Is Word:		found in hash
+Line:6	Field :		tiem		Case:	Is Word:		Not found in hash
+[H[2J---------	THE SPELL CHECKER PROGRAM	---------
+
+tiem On Line 6 Was Not Found In Dictionary
+
+A)	Add the Word To Dictionary
+I)	Ignore Word, and Skip Future References
+G)	Go On To Next Word
+S)	Search For A Suggested Spelling
+Q)	Quit Spell Checking File
+
+Selection : s
+Suggested Spelling :	time
+
+Press Enter to Return to Menu...
+
+[H[2J---------	THE SPELL CHECKER PROGRAM	---------
+
+tiem On Line 6 Was Not Found In Dictionary
+
+A)	Add the Word To Dictionary
+I)	Ignore Word, and Skip Future References
+G)	Go On To Next Word
+S)	Search For A Suggested Spelling
+Q)	Quit Spell Checking File
+
+Selection : a
+
+The Word tiem Has Been Successfully Inserted
+Press Enter to Continue...
+
+Line:6	Field :		I		Case:	Is Word:		found in hash
+Line:6	Field :		hit		Case:	Is Word:		Not found in hash
+[H[2J---------	THE SPELL CHECKER PROGRAM	---------
+
+hit On Line 6 Was Not Found In Dictionary
+
+A)	Add the Word To Dictionary
+I)	Ignore Word, and Skip Future References
+G)	Go On To Next Word
+S)	Search For A Suggested Spelling
+Q)	Quit Spell Checking File
+
+Selection : g
+Line:6	Field :		the		Case:	Is Word:		found in hash
+Line:6	Field :		keys		Case:	Is Word:		Not found in hash
+[H[2J---------	THE SPELL CHECKER PROGRAM	---------
+
+keys On Line 6 Was Not Found In Dictionary
+
+A)	Add the Word To Dictionary
+I)	Ignore Word, and Skip Future References
+G)	Go On To Next Word
+S)	Search For A Suggested Spelling
+Q)	Quit Spell Checking File
+
+Selection : a
+
+The Word keys Has Been Successfully Inserted
+Press Enter to Continue...
+
+Line:6	Field :		I		Case:	Is Word:		found in hash
+Line:6	Field :		egt		Case:	Is Word:		Not found in hash
+[H[2J---------	THE SPELL CHECKER PROGRAM	---------
+
+egt On Line 6 Was Not Found In Dictionary
+
+A)	Add the Word To Dictionary
+I)	Ignore Word, and Skip Future References
+G)	Go On To Next Word
+S)	Search For A Suggested Spelling
+Q)	Quit Spell Checking File
+
+Selection : s
+Suggested Spelling :	get
+
+Press Enter to Return to Menu...
+
+[H[2J---------	THE SPELL CHECKER PROGRAM	---------
+
+egt On Line 6 Was Not Found In Dictionary
+
+A)	Add the Word To Dictionary
+I)	Ignore Word, and Skip Future References
+G)	Go On To Next Word
+S)	Search For A Suggested Spelling
+Q)	Quit Spell Checking File
+
+Selection : g
+Line:6	Field :		into		Case:	Is Word:		found in hash
+Line:6	Field :		troulbe!		Case:	Is Word:		New Word:	troulbe	Not found in hash
+[H[2J---------	THE SPELL CHECKER PROGRAM	---------
+
+troulbe On Line 6 Was Not Found In Dictionary
+
+A)	Add the Word To Dictionary
+I)	Ignore Word, and Skip Future References
+G)	Go On To Next Word
+S)	Search For A Suggested Spelling
+Q)	Quit Spell Checking File
+
+Selection : g
+Line:7	Field :				Case:	Not Word
+Line:8	Field :		don't		Case:	Is Word:		found in hash
+Line:8	Field :		worry		Case:	Is Word:		Not found in hash
+[H[2J---------	THE SPELL CHECKER PROGRAM	---------
+
+worry On Line 8 Was Not Found In Dictionary
+
+A)	Add the Word To Dictionary
+I)	Ignore Word, and Skip Future References
+G)	Go On To Next Word
+S)	Search For A Suggested Spelling
+Q)	Quit Spell Checking File
+
+Selection : g
+Line:8	Field :		abuot		Case:	Is Word:		Not found in hash
+[H[2J---------	THE SPELL CHECKER PROGRAM	---------
+
+abuot On Line 8 Was Not Found In Dictionary
+
+A)	Add the Word To Dictionary
+I)	Ignore Word, and Skip Future References
+G)	Go On To Next Word
+S)	Search For A Suggested Spelling
+Q)	Quit Spell Checking File
+
+Selection : g
+Line:8	Field :		me		Case:	Is Word:		Not found in hash
+[H[2J---------	THE SPELL CHECKER PROGRAM	---------
+
+me On Line 8 Was Not Found In Dictionary
+
+A)	Add the Word To Dictionary
+I)	Ignore Word, and Skip Future References
+G)	Go On To Next Word
+S)	Search For A Suggested Spelling
+Q)	Quit Spell Checking File
+
+Selection : g
+Line:8	Field :		thuogh,		Case:	Is Word:		New Word:	thuogh	Not found in hash
+[H[2J---------	THE SPELL CHECKER PROGRAM	---------
+
+thuogh On Line 8 Was Not Found In Dictionary
+
+A)	Add the Word To Dictionary
+I)	Ignore Word, and Skip Future References
+G)	Go On To Next Word
+S)	Search For A Suggested Spelling
+Q)	Quit Spell Checking File
+
+Selection : g
+Line:9	Field :				Case:	Not Word
+Line:10	Field :		hte		Case:	Is Word:		Not found in hash
+[H[2J---------	THE SPELL CHECKER PROGRAM	---------
+
+hte On Line 10 Was Not Found In Dictionary
+
+A)	Add the Word To Dictionary
+I)	Ignore Word, and Skip Future References
+G)	Go On To Next Word
+S)	Search For A Suggested Spelling
+Q)	Quit Spell Checking File
+
+Selection : g
+Line:10	Field :		end!		Case:	Is Word:		New Word:	end	Not found in hash
+[H[2J---------	THE SPELL CHECKER PROGRAM	---------
+
+end On Line 10 Was Not Found In Dictionary
+
+A)	Add the Word To Dictionary
+I)	Ignore Word, and Skip Future References
+G)	Go On To Next Word
+S)	Search For A Suggested Spelling
+Q)	Quit Spell Checking File
+
+Selection : g
+
+********Program has reached the end of the file********
+
+Now Exiting
+]0;dumas_ms@cobra:~/CSC245/Prog3[dumas_ms@cobra Prog3]$ cat dict.txt
+at
+anonymous
+a
+already
+along
+after
+adjustments
+adapter
+about
+access
+accept
+actually
+adjust
+adapters
+address
+add
+additional
+advised
+almost
+all
+aims
+and
+an
+also
+alternatives
+anything
+any
+answer
+as
+anywhere
+appear
+are
+append
+april
+applies
+around
+assumes
+be
+attempt
+attached
+attention
+available
+base
+based
+behave
+beginning
+begin
+becoming
+before
+been
+bug
+brick
+boot
+blue
+both
+boots
+by
+but
+build
+built
+building
+bus
+button
+header
+disk
+detected
+channel
+cannot
+can
+cable
+cables
+called
+can't
+changes
+certain
+capacity
+cd-rom
+card
+cartridges
+careful
+case
+certainly
+chained
+chain
+check
+design
+current
+copy
+converters
+command
+co-exist
+clause
+choose
+choice
+collected
+comes
+come
+constant
+components
+complex
+compile
+compatible
+configured
+configuration
+computer's
+console
+connects
+conjunction
+confusing
+configuring
+conflict
+connected
+connect
+connector
+connecting
+connectors
+contain
+contributions
+contained
+controller
+critical
+course
+couple
+correspond
+could
+correspondingly
+depends
+defaults
+currently
+data
+cylinders
+default
+day
+describes
+device
+dip
+devices
+discussion
+disappear
+driver
+diverted
+display
+disks
+distributions
+displayed
+drive
+do
+documented
+documentation
+document
+don't
+does
+door
+drive's
+gives
+find
+easily
+drivers
+drives
+each
+else
+eject
+effect
+finally
+enabled
+every
+even
+errors
+ends
+enables
+enclosure
+enhancements
+file
+example
+exactly
+except
+existing
+fast
+family
+expect
+familiar
+extreme
+external
+features
+few
+female
+fetch
+fill
+files
+get
+for
+following
+firmly
+floppy
+flag
+from
+found
+forget
+force
+gear
+front
+gaps
+have
+has
+grant
+go
+hardware
+host
+here
+help
+high
+hold
+holding
+macintosh
+id
+i
+how
+identically
+introduction
+information
+if
+identifying
+identify
+in
+important
+included
+include
+incorporates
+into
+install
+insert
+internal
+interim
+intended
+instructions
+installation
+instance
+installed
+interface
+introduced
+look
+is
+kernels
+kernel's
+kernel
+it
+its
+itself
+jumpers
+like
+last
+large
+less
+lightweight
+log
+locks
+locked
+likely
+loadable
+line
+limited
+load
+list
+loaded
+loops
+low-level
+low
+make
+main
+major
+many
+male
+may
+markets
+sectors
+section
+screens
+mode
+messages
+megabytes
+menu
+might
+method
+missing
+modes
+model
+revision
+retrieve
+name
+must
+module
+most
+more
+modules
+months
+on
+need
+of
+not
+net
+next
+new
+nice
+normally
+no
+none
+numbers
+number
+note
+now
+obtained
+often
+port
+parts
+only
+once
+one
+parallel
+otherwise
+or
+others
+other
+oriented
+part
+parameter
+parameters
+partly
+particular
+pin
+pieces
+physically
+paul
+pay
+please
+plastic
+point
+popular
+pressed
+powerful
+powered
+possible
+ports
+portable
+report
+relevant
+released
+reboot
+read
+quite
+question
+published
+printer
+provide
+protocol
+process
+proprietary
+recent
+removed
+remember
+removable
+responsibility
+required
+resembling
+same
+sample
+screen
+sector
+torque
+the
+send
+selects
+select
+seen
+see
+should
+sequential
+several
+set
+setup
+shipped
+someone
+some
+slower
+similar
+shutdown
+since
+simultaneous
+small
+software
+something
+subdirectory
+speed
+somewhat
+soon
+specific
+source
+special
+specified
+starting
+stable
+start
+standard
+step
+style
+study
+such
+system
+syntax
+summary
+supplied
+switches
+support
+sure
+supports
+switch
+that
+terminated
+tells
+target
+terminators
+terminator
+termination
+thank
+to
+this
+them
+their
+these
+then
+there
+thing
+they
+things
+time
+three
+those
+thorough
+timing
+total
+touch
+type
+trouble
+try
+traditional
+tree
+two
+zip
+vendor
+using
+useful
+use
+types
+under
+unlocks
+used
+users
+uses
+usually
+would
+version
+were
+way
+versions
+want
+wall
+wants
+well
+will
+what
+when
+where
+which
+while
+with
+wiring
+work
+workaround
+your
+you
+zoom
+tiem
+keys
+]0;dumas_ms@cobra:~/CSC245/Prog3[dumas_ms@cobra Prog3]$ exit
+exit
+
+Script done on Fri 19 Apr 2013 02:11:31 AM EDT
